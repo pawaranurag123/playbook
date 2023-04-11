@@ -1,0 +1,36 @@
+---
+- hosts: localhost
+  tasks:
+    - name: download nexus artifact
+      maven_artifact:
+        group_id: com.io
+        version: latest
+        extension: jar
+        artifact_id: exhibit
+        repository_url: http://34.245.190.241:8081/repository/demo-snapshots/
+        username: admin
+        password: admin123
+        dest: /tmp/
+
+
+
+- hosts: aws_ec2 
+  become: True
+  tasks:
+    - name: copy jar to target
+      copy:
+        src: /tmp/exhibit.jar
+        dest: /var/www/
+    - name: Install packages
+      yum:
+        name: "httpd"
+        state: "present"
+    - name: Start Apache 
+      service:
+        name: httpd
+        state: started
+        enabled: True
+    - name: Deploy static website
+      copy:
+        src: index.html
+        dest: /var/www/html/
